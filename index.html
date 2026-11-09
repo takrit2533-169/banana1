@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบแดชบอร์ดองค์ความรู้การแปรรูปกล้วย 3 วิธีเชิงลึก</title>
+  <!-- Chart.js for interactive analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Google Fonts for crisp Thai typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-subtle: #f1f5f9;
+      --border: #e2e8f0;
+      --border-focus: #f59e0b;
+      --ink: #0f172a;
+      --ink-secondary: #334155;
+      --muted: #64748b;
+      --banana-primary: #d97706;
+      --banana-light: #fef3c7;
+      --banana-accent: #f59e0b;
+      --banana-gold: #b45309;
+      --green-primary: #059669;
+      --green-light: #d1fae5;
+      --blue-primary: #0284c7;
+      --blue-light: #e0f2fe;
+      --purple-primary: #7c3aed;
+      --purple-light: #ede9fe;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+      --font-display: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: 'Sarabun', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Container */
+    .dashboard-container {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+    }
+
+    /* Top Brand Navigation */
+    header.dash-header {
+      background: linear-gradient(135deg, #78350f 0%, #b45309 50%, #d97706 100%);
+      color: #ffffff;
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    header.dash-header::after {
+      content: '';
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .header-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .title-area h1 {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .title-area p {
+      font-size: 15px;
+      color: #fef3c7;
+      max-width: 780px;
+      font-weight: 300;
+    }
+
+    .badge-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(4px);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Stat Cards Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+      border-top: 4px solid var(--border);
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .kpi-card.solar { border-top-color: var(--banana-accent); }
+    .kpi-card.flour { border-top-color: var(--green-primary); }
+    .kpi-card.vacuum { border-top-color: var(--blue-primary); }
+    .kpi-card.overall { border-top-color: #8b5cf6; }
+
+    .kpi-label {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .kpi-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .kpi-card.solar .kpi-icon { background: var(--banana-light); color: var(--banana-gold); }
+    .kpi-card.flour .kpi-icon { background: var(--green-light); color: var(--green-primary); }
+    .kpi-card.vacuum .kpi-icon { background: var(--blue-light); color: var(--blue-primary); }
+    .kpi-card.overall .kpi-icon { background: var(--purple-light); color: var(--purple-primary); }
+
+    .kpi-value {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 10px 0 4px;
+    }
+
+    .kpi-desc {
+      font-size: 13px;
+      color: var(--ink-secondary);
+      line-height: 1.4;
+    }
+
+    /* Filter & Controls Bar */
+    .controls-nav {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tab-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface-subtle);
+      color: var(--ink-secondary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover {
+      background: #e2e8f0;
+      color: var(--ink);
+    }
+
+    .filter-btn.active {
+      background: var(--ink);
+      color: #ffffff;
+      border-color: var(--ink);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+    }
+
+    .filter-btn.active.solar { background: #b45309; border-color: #b45309; }
+    .filter-btn.active.flour { background: #047857; border-color: #047857; }
+    .filter-btn.active.vacuum { background: #0369a1; border-color: #0369a1; }
+
+    .quick-view-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* Main Content Sections Grid */
+    .methods-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 28px;
+      margin-bottom: 32px;
+    }
+
+    .method-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      transition: box-shadow 0.25s ease;
+    }
+
+    .method-card:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Card Header */
+    .method-header {
+      padding: 24px 28px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .method-header.solar-head { background: linear-gradient(to right, #fffbeb, #ffffff); }
+    .method-header.flour-head { background: linear-gradient(to right, #f0fdf4, #ffffff); }
+    .method-header.vacuum-head { background: linear-gradient(to right, #f0f9ff, #ffffff); }
+
+    .method-title-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .method-badge-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .method-title-group h2 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .method-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .spec-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .spec-pill {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 16px;
+      font-weight: 500;
+      border: 1px solid transparent;
+    }
+
+    .spec-pill.raw { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+    .spec-pill.target { background: #e0f2fe; color: #075985; border-color: #bae6fd; }
+    .spec-pill.temp { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+    .spec-pill.moist { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+
+    /* Method Body Layout */
+    .method-content-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 24px;
+      padding: 28px;
+    }
+
+    @media (max-width: 992px) {
+      .method-content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Left Visual Panel */
+    .method-visual-panel {
+      background: var(--surface-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .tech-diagram {
+      width: 100%;
+      height: 220px;
+      border-radius: var(--radius-sm);
+      background: #ffffff;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .key-facts-list {
+      list-style: none;
+      font-size: 13px;
+    }
+
+    .key-facts-list li {
+      padding: 8px 0;
+      border-bottom: 1px dashed var(--border);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .key-facts-list li:last-child {
+      border-bottom: none;
+    }
+
+    .key-facts-list .kf-title {
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .key-facts-list .kf-val {
+      font-weight: 600;
+      color: var(--ink);
+      text-align: right;
+    }
+
+    /* Right Step-by-Step Flow */
+    .process-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 16px;
+      position: relative;
+    }
+
+    .step-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 17px;
+      top: 36px;
+      bottom: -16px;
+      width: 2px;
+      background: #cbd5e1;
+    }
+
+    .step-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 2px solid #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--ink-secondary);
+      flex-shrink: 0;
+      z-index: 1;
+      transition: all 0.2s ease;
+    }
+
+    .solar-timeline .step-number { border-color: var(--banana-accent); color: var(--banana-gold); background: #fffbeb; }
+    .flour-timeline .step-number { border-color: var(--green-primary); color: #047857; background: #f0fdf4; }
+    .vacuum-timeline .step-number { border-color: var(--blue-primary); color: #0369a1; background: #f0f9ff; }
+
+    .step-body {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      flex-grow: 1;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .step-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .step-title {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--ink);
+    }
+
+    .step-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: var(--surface-subtle);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .step-desc {
+      font-size: 13.5px;
+      color: var(--ink-secondary);
+      line-height: 1.5;
+    }
+
+    .step-tip {
+      margin-top: 8px;
+      padding: 6px 12px;
+      background: #f8fafc;
+      border-left: 3px solid #f59e0b;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 12.5px;
+      color: #92400e;
+    }
+
+    .step-tip.green {
+      border-left-color: #10b981;
+      color: #065f46;
+      background: #f0fdf4;
+    }
+
+    .step-tip.blue {
+      border-left-color: #0284c7;
+      color: #075985;
+      background: #f0f9ff;
+    }
+
+    /* Comparison & Interactive Analytics Section */
+    .dashboard-secondary-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 992px) {
+      .dashboard-secondary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .chart-header h3 {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .chart-box {
+      position: relative;
+      height: 280px;
+      width: 100%;
+    }
+
+    /* Comparison Table Section */
+    .table-container-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      margin-bottom: 32px;
+    }
+
+    .table-header-bar {
+      padding: 18px 24px;
+      background: var(--surface-subtle);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .table-header-bar h3 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table.compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+    }
+
+    table.compare-table th {
+      background: #f8fafc;
+      color: var(--muted);
+      font-weight: 600;
+      padding: 14px 18px;
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+
+    table.compare-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      color: var(--ink);
+      vertical-align: middle;
+    }
+
+    table.compare-table tr:hover td {
+      background-color: #f8fafc;
+    }
+
+    .product-cell {
+      font-family: var(--font-display);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .indicator-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* Interactive Batch Calculator */
+    .calculator-card {
+      background: linear-gradient(145deg, #ffffff, #fbfcfd);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 32px;
+    }
+
+    .calculator-header {
+      margin-bottom: 20px;
+    }
+
+    .calculator-header h3 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .calculator-header p {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .calc-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+      background: var(--surface-subtle);
+      padding: 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      margin-bottom: 6px;
+    }
+
+    .input-group select,
+    .input-group input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 14px;
+      background: #ffffff;
+      color: var(--ink);
+    }
+
+    .input-group select:focus,
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--banana-primary);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+    }
+
+    .calc-results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .res-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .res-box .r-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    .res-box .r-val {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--banana-gold);
+    }
+
+    .res-box .r-sub {
+      font-size: 11.5px;
+      color: var(--ink-secondary);
+      margin-top: 4px;
+    }
+
+    /* Modal for Detailed SOP Inspection */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      max-width: 680px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      padding: 28px;
+    }
+
+    .close-modal-btn {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: transparent;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: var(--muted);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-modal-btn:hover {
+      background: var(--surface-subtle);
+      color: var(--ink);
+    }
+
+    /* Footer */
+    footer.dash-footer {
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+      .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .title-area h1 {
+        font-size: 20px;
+      }
+      .dashboard-container {
+        padding: 16px 12px 40px;
+      }
+      .method-content-grid {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+  <!-- Top Banner Header -->
+  <header class="dash-header">
+    <div class="header-content">
+      <div class="title-area">
+        <div style="display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+          <span class="badge-tag">ศูนย์ปฏิบัติการแปรรูปผลผลิตเกษตร</span>
+          <span class="badge-tag">นวัตกรรมเทคโนโลยีอาหาร 4.0</span>
+          <span class="badge-tag">มาตรฐานแปรรูปเชิงพาณิชย์</span>
+        </div>
+        <h1>
+          <!-- Banana SVG Icon -->
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 13c3.5-2 8-2 10 2 1.5 3 4 4 6 4" />
+            <path d="M5.5 10.5c2-1 5-1 7 1" />
+            <path d="M7 8c2.5-.5 5 0 6 2" />
+          </svg>
+          แดชบอร์ดองค์ความรู้: การแปรรูปผลิตภัณฑ์จากกล้วย 3 นวัตกรรมเชิงลึก
+        </h1>
+        <p>เจาะลึกกระบวนการทางวิทยาศาสตร์อาหาร พารามิเตอร์ควบคุมวิกฤต (CCP) สัดส่วนสารละลาย อุณหภูมิ ความดัน และสเปกมาตรฐานผลิตภัณฑ์สำหรับ 3 สายการแปรรูปหลัก</p>
+      </div>
+      <div>
+        <button class="filter-btn active" onclick="openModalOverview()" style="background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.4); color: #fff;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          เกณฑ์มาตรฐาน อย. & CCP
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- KPI Metric Overview Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card solar">
+      <div class="kpi-label">
+        <span>วิธีที่ 1 : กล้วยตากแสงอาทิตย์</span>
+        <div class="kpi-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-value">50–60°C</div>
+      <div class="kpi-desc">พาราโบลาโดม 3–5 วัน • ความชื้น 25–30% • พาสเจอไรซ์ 70°C 45 นาที</div>
+    </div>
+
+    <div class="kpi-card flour">
+      <div class="kpi-label">
+        <span>วิธีที่ 2 : แป้งกล้วยดิบเพื่อสุขภาพ</span>
+        <div class="kpi-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-value">RS Type 2 สูง</div>
+      <div class="kpi-desc">อบลมร้อน ≤55°C • ร่อน 80–100 Mesh • ความชื้น &lt;10% • เก็บได้ &gt;1 ปี</div>
+    </div>
+
+    <div class="kpi-card vacuum">
+      <div class="kpi-label">
+        <span>วิธีที่ 3 : กล้วยกรอบสุญญากาศ</span>
+        <div class="kpi-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-value">น้ำมัน 3–6%</div>
+      <div class="kpi-desc">ความดัน &lt;10 kPa • ทอดต่ำ 90–105°C • Pre-freeze -18°C • ไนโตรเจนฟลัช</div>
+    </div>
+
+    <div class="kpi-card overall">
+      <div class="kpi-label">
+        <span>การรองรับวัตถุดิบ</span>
+        <div class="kpi-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-value">3 สเตจความสุก</div>
+      <div class="kpi-desc">ครอบคลุมกล้วยสุกงอมจัด, กล้วยแก่เขียวจัด, และกล้วยแก่เนื้อแน่นไร้ของเสีย (Zero Waste)</div>
+    </div>
+  </div>
+
+  <!-- Interactive Controls & Navigation Filters -->
+  <div class="controls-nav">
+    <div class="tab-filters">
+      <button class="filter-btn active" onclick="filterMethods('all', this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        แสดงทั้งหมด (3 วิธี)
+      </button>
+      <button class="filter-btn" onclick="filterMethods('solar', this)">
+        ☀️ 1. กล้วยตากพลังงานแสงอาทิตย์
+      </button>
+      <button class="filter-btn" onclick="filterMethods('flour', this)">
+        🍃 2. แป้งกล้วยดิบ (Resistant Starch)
+      </button>
+      <button class="filter-btn" onclick="filterMethods('vacuum', this)">
+        ❄️ 3. กล้วยกรอบสุญญากาศ (Vacuum Fried)
+      </button>
+    </div>
+    <div class="quick-view-toggle">
+      <span>มุมมอง: ขั้นตอนเทคนิคและผังกระบวนการ</span>
+    </div>
+  </div>
+
+  <!-- 3 Detailed Process Method Cards -->
+  <div class="methods-grid" id="methodsContainer">
+
+    <!-- METHOD 1: Solar-Dried Bananas -->
+    <div class="method-card" data-method="solar" id="method-solar">
+      <div class="method-header solar-head">
+        <div class="method-title-group">
+          <div class="method-badge-icon" style="background: #fef3c7; color: #b45309;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="4"></circle>
+              <path d="M12 2v2"></path>
+              <path d="M12 20v2"></path>
+              <path d="M4.93 4.93l1.41 1.41"></path>
+              <path d="M17.66 17.66l1.41 1.41"></path>
+              <path d="M2 12h2"></path>
+              <path d="M20 12h2"></path>
+              <path d="M6.34 17.66l-1.41 1.41"></path>
+              <path d="M19.07 4.93l-1.41 1.41"></path>
+            </svg>
+          </div>
+          <div>
+            <h2>1. กล้วยตากพลังงานแสงอาทิตย์ (Solar-Dried Bananas)</h2>
+            <div class="method-sub">ระบบพาราโบลาโดมควบคุมสุขอนามัยมาตรฐานอุตสาหกรรม</div>
+          </div>
+        </div>
+        <div class="spec-pills">
+          <span class="spec-pill raw">🍌 กล้วยน้ำว้าสุกงอม เปลือกเหลืองมีกระดำ</span>
+          <span class="spec-pill temp">🌡️ อุณหภูมิ 50–60°C</span>
+          <span class="spec-pill moist">💧 ความชื้นสุดท้าย 25–30%</span>
+          <span class="spec-pill target">🎯 ตลาดของฝาก สแน็กธรรมชาติ</span>
+        </div>
+      </div>
+
+      <div class="method-content-grid">
+        <!-- Visual Technical Panel -->
+        <div class="method-visual-panel">
+          <div class="tech-diagram">
+            <!-- Custom Vector SVG Illustration: Parabola Solar Dome -->
+            <svg viewBox="0 0 300 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="solarSky" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#fffbeb"/>
+                  <stop offset="100%" stop-color="#fef3c7"/>
+                </linearGradient>
+                <linearGradient id="polycarb" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#93c5fd" stop-opacity="0.6"/>
+                  <stop offset="100%" stop-color="#60a5fa" stop-opacity="0.2"/>
+                </linearGradient>
+              </defs>
+              <!-- Background -->
+              <rect width="300" height="200" fill="url(#solarSky)"/>
+              <!-- Sun Rays -->
+              <circle cx="45" cy="40" r="22" fill="#f59e0b" opacity="0.9"/>
+              <path d="M45 10 L45 3 M45 77 L45 70 M15 40 L8 40 M82 40 L75 40 M23 18 L18 13 M67 62 L72 67 M23 62 L18 67 M67 18 L72 13" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- Solar Parabola Dome Frame -->
+              <path d="M50 170 C50 60, 250 60, 250 170 Z" fill="url(#polycarb)" stroke="#0284c7" stroke-width="2.5"/>
+              <path d="M70 170 C70 85, 230 85, 230 170" fill="none" stroke="#38bdf8" stroke-dasharray="4 3"/>
+              <path d="M100 170 C100 105, 200 105, 200 170" fill="none" stroke="#38bdf8" stroke-dasharray="4 3"/>
+              <!-- Concrete Base -->
+              <rect x="40" y="170" width="220" height="15" rx="3" fill="#64748b"/>
+              <!-- Drying Racks inside -->
+              <line x1="80" y1="140" x2="220" y2="140" stroke="#475569" stroke-width="2.5"/>
+              <line x1="80" y1="158" x2="220" y2="158" stroke="#475569" stroke-width="2.5"/>
+              <!-- Bananas on Tray -->
+              <ellipse cx="100" cy="138" rx="10" ry="3.5" fill="#b45309"/>
+              <ellipse cx="125" cy="138" rx="10" ry="3.5" fill="#d97706"/>
+              <ellipse cx="150" cy="138" rx="10" ry="3.5" fill="#b45309"/>
+              <ellipse cx="175" cy="138" rx="10" ry="3.5" fill="#d97706"/>
+              <ellipse cx="200" cy="138" rx="10" ry="3.5" fill="#b45309"/>
+              <!-- Air Vent & Temperature label -->
+              <rect x="130" y="55" width="40" height="14" rx="4" fill="#0369a1"/>
+              <text x="150" y="65" fill="#ffffff" font-size="9" font-family="sans-serif" font-weight="bold" text-anchor="middle">50-60°C</text>
+              <text x="150" y="195" fill="#334155" font-size="10.5" font-family="Prompt, sans-serif" font-weight="600" text-anchor="middle">พาราโบลาโดมพลังงานแสงอาทิตย์</text>
+            </svg>
+          </div>
+          <ul class="key-facts-list">
+            <li>
+              <span class="kf-title">พันธุ์กล้วยที่ใช้</span>
+              <span class="kf-val">กล้วยน้ำว้าแก่จัดบ่มงอม</span>
+            </li>
+            <li>
+              <span class="kf-title">ระยะเวลาแปรรูป</span>
+              <span class="kf-val">รวม 3 – 5 วัน</span>
+            </li>
+            <li>
+              <span class="kf-title">การควบคุมเอนไซม์</span>
+              <span class="kf-val">แช่น้ำเกลือ NaCl 1–2%</span>
+            </li>
+            <li>
+              <span class="kf-title">การฆ่าเชื้อ (Pasteurize)</span>
+              <span class="kf-val">ลมร้อน 70°C (30–45 นาที)</span>
+            </li>
+            <li>
+              <span class="kf-title">อายุการเก็บรักษา</span>
+              <span class="kf-val">6 – 12 เดือน (ซองสุญญากาศ)</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Detailed Steps Flow -->
+        <div class="process-timeline solar-timeline">
+          <!-- Step 1 -->
+          <div class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การคัดเลือกและบ่มกล้วย (Raw Material & Ripening)</span>
+                <span class="step-tag">เตรียมวัตถุดิบ</span>
+              </div>
+              <p class="step-desc">คัดกล้วยน้ำว้าแก่จัด นำมาบ่มจนกระทั่งเปลือกเปลี่ยนเป็นสีเหลืองทองและมีจุดกระน้ำตาลเล็กน้อย เพื่อให้เอนไซม์ย่อยแป้งกลายเป็นน้ำตาลฟรุกโตสและกลูโคสธรรมชาติสมบูรณ์ ให้ความหวานเข้มข้นโดยไม่ต้องเติมน้ำตาลทราย</p>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การปอกและชะล้างเมือก (Peeling & Saline Washing)</span>
+                <span class="step-tag">ลดเอนไซม์คล้ำ</span>
+              </div>
+              <p class="step-desc">ปอกเปลือกและดึงเส้นใย (Phloem bundles) รอบผลออกให้หมดเกลี้ยง ล้างด้วยสารละลายเกลือแกง (NaCl) ความเข้มข้น 1–2% เพื่อลดการเกิดสีคล้ำจากปฏิกิริยาออกซิเดชัน (Enzymatic Browning) ชะล้างเมือกยาง แล้วผึ่งบนตะแกรงสแตนเลสให้สะเด็ดน้ำ</p>
+              <div class="step-tip">💡 ทริคสำคัญ: การล้างน้ำเกลือเจือจางช่วยให้ผิวกล้วยเนียนใส สีทองอร่าม ไม่หมองคล้ำเมื่อโดนความร้อน</div>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การตากระยะแรก (Primary Solar Drying)</span>
+                <span class="step-tag">50–60°C / 2-3 วัน</span>
+              </div>
+              <p class="step-desc">วางเรียงชิ้นกล้วยบนตะแกรงเกรดอาหาร (Food Grade) ภายในพาราโบลาโดมหรือตู้อบพลังงานแสงอาทิตย์ ควบคุมอุณหภูมิที่ 50–60°C ตากเป็นเวลา 2–3 วัน จนผิวนอกเริ่มแห้งหมาดและเซตตัว</p>
+            </div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="step-item">
+            <div class="step-number">4</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การกดและคลึงแบน (Flattening / Rolling)</span>
+                <span class="step-tag">สร้าง Texture นุ่มหนึบ</span>
+              </div>
+              <p class="step-desc">นำผลกล้วยที่ผิวนอกหมาดมากดหรือคลึงเบาๆ ด้วยลูกกลิ้งสแตนเลสหรือแป้นกดสุขาภิบาล ขั้นตอนนี้ช่วยกระจายความชื้นและน้ำหวานจากแกนกลางผลออกสู่รอบนอกอย่างสม่ำเสมอ ทำให้เนื้อสัมผัสเหนียวนุ่มสม่ำเสมอทั้งผล</p>
+            </div>
+          </div>
+
+          <!-- Step 5 -->
+          <div class="step-item">
+            <div class="step-number">5</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การตากระยะที่สอง (Secondary Drying)</span>
+                <span class="step-tag">ควบคุมความชื้น 25–30%</span>
+              </div>
+              <p class="step-desc">นำกลับเข้าโดมอบพลังงานแสงอาทิตย์ต่ออีก 1–2 วัน จนความชื้นลดลงเหลือ 25–30% สีของกล้วยเปลี่ยนเป็นสีน้ำตาลทองเงางามตามธรรมชาติ มีค่าน้ำอิสระ (Water Activity, aw) ต่ำพอที่จะยับยั้งการเติบโตของแบคทีเรียก่อโรค</p>
+            </div>
+          </div>
+
+          <!-- Step 6 -->
+          <div class="step-item">
+            <div class="step-number">6</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การพาสเจอไรซ์และบรรจุสุญญากาศ (Pasteurization & Vacuum Pack)</span>
+                <span class="step-tag">70°C 30–45 นาที</span>
+              </div>
+              <p class="step-desc">นำเข้าตู้อบลมร้อนที่อุณหภูมิ 70°C เป็นเวลา 30–45 นาที เพื่อทำลายสปอร์เชื้อราและยีสต์ ก่อนบรรจุลงในซองสุญญากาศ (Vacuum Pouch) ป้องกันความชื้นและอากาศ ยืดอายุการเก็บได้นานนับปีโดยไม่ต้องใส่สารกันเสีย</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- METHOD 2: Green Banana Flour -->
+    <div class="method-card" data-method="flour" id="method-flour">
+      <div class="method-header flour-head">
+        <div class="method-title-group">
+          <div class="method-badge-icon" style="background: #d1fae5; color: #059669;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+          </div>
+          <div>
+            <h2>2. แป้งกล้วยดิบเพื่อสุขภาพ (Green Banana Flour / Resistant Starch RS2)</h2>
+            <div class="method-sub">ซูเปอร์ฟู้ดพรีไบโอติก ดัชนีน้ำตาลต่ำ สำหรับเบเกอรี่ฟังก์ชันและอาหารสุขภาพ</div>
+          </div>
+        </div>
+        <div class="spec-pills">
+          <span class="spec-pill raw">🍃 กล้วยน้ำว้าดิบแก่จัด เปลือกเขียวเข้ม</span>
+          <span class="spec-pill temp">🌡️ อบลมร้อน 50–55°C (ไม่เกิน 60°C)</span>
+          <span class="spec-pill moist">💧 ความชื้นต่ำกว่า 10%</span>
+          <span class="spec-pill target">🎯 เบาหวาน คีโต กลูเตนฟรี พรีไบโอติก</span>
+        </div>
+      </div>
+
+      <div class="method-content-grid">
+        <!-- Visual Technical Panel -->
+        <div class="method-visual-panel">
+          <div class="tech-diagram">
+            <!-- Custom Vector SVG Illustration: Green Banana Flour Milling -->
+            <svg viewBox="0 0 300 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="flourBg" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#f0fdf4"/>
+                  <stop offset="100%" stop-color="#dcfce7"/>
+                </linearGradient>
+              </defs>
+              <rect width="300" height="200" fill="url(#flourBg)"/>
+              <!-- Green Banana Slices falling -->
+              <ellipse cx="60" cy="45" rx="18" ry="7" fill="#15803d" transform="rotate(-15 60 45)"/>
+              <ellipse cx="60" cy="45" rx="14" ry="5" fill="#86efac" transform="rotate(-15 60 45)"/>
+              <ellipse cx="90" cy="70" rx="16" ry="6" fill="#15803d" transform="rotate(20 90 70)"/>
+              <ellipse cx="90" cy="70" rx="12" ry="4" fill="#86efac" transform="rotate(20 90 70)"/>
+              <!-- Milling Machine / Cyclone Hopper -->
+              <path d="M120 30 L220 30 L195 85 L145 85 Z" fill="#64748b" stroke="#334155" stroke-width="2"/>
+              <rect x="150" y="85" width="40" height="35" fill="#475569"/>
+              <path d="M170 88 L170 115" stroke="#cbd5e1" stroke-width="3" stroke-dasharray="3 3"/>
+              <!-- Sieve Screen 80-100 Mesh -->
+              <line x1="140" y1="125" x2="200" y2="125" stroke="#059669" stroke-width="3"/>
+              <text x="215" y="128" fill="#047857" font-size="8.5" font-family="sans-serif" font-weight="bold">100 Mesh</text>
+              <!-- Fine Flour Powder Bowl -->
+              <path d="M130 170 Q170 185 210 170 Q170 145 130 170 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+              <path d="M135 168 Q170 152 205 168 Z" fill="#ecfdf5"/>
+              <text x="170" y="166" fill="#065f46" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle">RS2 Powder</text>
+              <!-- Hot Air Oven indicator -->
+              <rect x="25" y="120" width="85" height="50" rx="6" fill="#ffffff" stroke="#10b981" stroke-width="1.5"/>
+              <text x="67" y="140" fill="#047857" font-size="10" font-weight="bold" text-anchor="middle">Hot Air Oven</text>
+              <text x="67" y="156" fill="#059669" font-size="11" font-weight="bold" text-anchor="middle">50–55°C</text>
+              <text x="150" y="195" fill="#065f46" font-size="10.5" font-family="Prompt, sans-serif" font-weight="600" text-anchor="middle">การบดร่อนแป้งกล้วยต้านการย่อย (RS2)</text>
+            </svg>
+          </div>
+          <ul class="key-facts-list">
+            <li>
+              <span class="kf-title">สารออกฤทธิ์หลัก</span>
+              <span class="kf-val">Resistant Starch (RS2)</span>
+            </li>
+            <li>
+              <span class="kf-title">การลวกยับยั้งเอนไซม์</span>
+              <span class="kf-val">น้ำร้อน 80–90°C (5–10 นาที)</span>
+            </li>
+            <li>
+              <span class="kf-title">สารชะลอสีคล้ำ</span>
+              <span class="kf-val">กรดซิตริก 0.5% (5 นาที)</span>
+            </li>
+            <li>
+              <span class="kf-title">ขนาดอนุภาคแป้ง</span>
+              <span class="kf-val">ตะแกรงร่อน 80–100 Mesh</span>
+            </li>
+            <li>
+              <span class="kf-title">ความชื้น & อายุเก็บ</span>
+              <span class="kf-val">&lt; 10% / มากกว่า 1 ปี</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Detailed Steps Flow -->
+        <div class="process-timeline flour-timeline">
+          <!-- Step 1 -->
+          <div class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การคัดเลือกกล้วยดิบแก่จัด (Selection of Mature Green Bananas)</span>
+                <span class="step-tag">แป้งสูง รสฝาด</span>
+              </div>
+              <p class="step-desc">คัดกล้วยน้ำว้าดิบแก่จัดที่เปลือกยังมีสีเขียวเข้มสนิท เนื้อในแน่น สีขาวนวล รสชาติยังคงฝาด ไม่มีรสหวาน ระยะนี้มีแป้งต้านการย่อย (Resistant Starch Type 2) ในปริมาณสูงสุด เหมาะสำหรับเป็นอาหารฟังก์ชัน</p>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การล้างและลวกด้วยความร้อน (Blanching & Enzyme Inactivation)</span>
+                <span class="step-tag">80–90°C / 5–10 นาที</span>
+              </div>
+              <p class="step-desc">ล้างผลกล้วยให้สะอาด นำไปลวกในน้ำร้อน 80–90°C นาน 5–10 นาที เพื่อหยุดการทำงานของเอนไซม์โพลีฟีนอลออกซิเดส (Polyphenol Oxidase - PPO) ป้องกันไม่ให้เนื้อกล้วยเปลี่ยนเป็นสีน้ำตาลคล้ำ และทำให้ยางสลายตัวช่วยให้ปอกเปลือกได้ง่ายขึ้น</p>
+              <div class="step-tip green">🌿 เทคนิคเฉพาะ: การลวกด้วยอุณหภูมิที่แม่นยำจะทำให้แป้งกล้วยที่ได้มีสีขาวสว่างนวลน่ารับประทาน</div>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การสไลซ์และแช่สารชะลอสี (Slicing & Anti-Browning Dip)</span>
+                <span class="step-tag">กรดซิตริก 0.5%</span>
+              </div>
+              <p class="step-desc">ปอกเปลือกและนำผลกล้วยมาหั่นสไลซ์เป็นแว่นบางหนา 1–2 มิลลิเมตร จากนั้นนำไปแช่ในสารละลายกรดซิตริก (Citric Acid) 0.5% หรือน้ำเกลือเจือจางทันทีเป็นเวลา 5 นาที เพื่อปรับค่า pH ยับยั้งปฏิกิริยาออกซิเดชัน แล้วสะเด็ดน้ำให้แห้ง</p>
+            </div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="step-item">
+            <div class="step-number">4</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การอบแห้งลมร้อน (Controlled Hot Air Dehydration)</span>
+                <span class="step-tag">50–55°C / 8–12 ชม.</span>
+              </div>
+              <p class="step-desc">นำชิ้นกล้วยเข้าตู้อบลมร้อนที่อุณหภูมิ 50–55°C <strong>(ข้อจำกัดสำคัญ: ห้ามเกิน 60°C)</strong> เพื่อป้องกันไม่ให้โครงสร้างโมเลกุลของ Resistant Starch เสียสภาพธรรมชาติ (Gelatinization) อบต่อเนื่องจนความชื้นต่ำกว่า 10% ชิ้นกล้วยจะแห้งกรอบสนิท</p>
+            </div>
+          </div>
+
+          <!-- Step 5 -->
+          <div class="step-item">
+            <div class="step-number">5</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การบดละเอียดและร่อนแป้ง (Milling & 80–100 Mesh Sieving)</span>
+                <span class="step-tag">Pin Mill / Hammer Mill</span>
+              </div>
+              <p class="step-desc">นำชิ้นกล้วยแห้งกรอบมาบดละเอียดด้วยเครื่องบดชนิดหมุด (Pin Mill) หรือเครื่องบดค้อน (Hammer Mill) จากนั้นร่อนผ่านตะแกรงสแตนเลสขนาด 80–100 เมช (Mesh) เพื่อให้ได้เนื้อแป้งที่เนียน ละเอียด สม่ำเสมอ เหมาะกับการทำเบเกอรี่หรือผสมเครื่องดื่มชงดื่ม</p>
+            </div>
+          </div>
+
+          <!-- Step 6 -->
+          <div class="step-item">
+            <div class="step-number">6</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การบรรจุซองฟอยล์ป้องกันความชื้น (Moisture-Barrier Packaging)</span>
+                <span class="step-tag">เก็บได้นาน &gt; 1 ปี</span>
+              </div>
+              <p class="step-desc">บรรจุลงในถุงอะลูมิเนียมฟอยล์หรือถุงลามิเนตกันแสงและความชื้น (Tri-laminate Foil Bag) พร้อมใส่ซองดูดออกซิเจนเพื่อป้องกันการดูดความชื้นกลับและรักษาอายุการเก็บรักษาได้ยาวนานเกิน 1 ปี</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- METHOD 3: Vacuum Fried Banana Chips -->
+    <div class="method-card" data-method="vacuum" id="method-vacuum">
+      <div class="method-header vacuum-head">
+        <div class="method-title-group">
+          <div class="method-badge-icon" style="background: #e0f2fe; color: #0284c7;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="14.31" y1="8" x2="20.05" y2="17.94"></line>
+              <line x1="9.69" y1="8" x2="21.17" y2="8"></line>
+              <line x1="7.38" y1="12" x2="13.12" y2="2.06"></line>
+              <line x1="9.69" y1="16" x2="3.95" y2="6.06"></line>
+              <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
+              <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
+            </svg>
+          </div>
+          <div>
+            <h2>3. กล้วยกรอบสุญญากาศ (Vacuum Fried Banana Chips)</h2>
+            <div class="method-sub">เทคโนโลยีทอดความดันต่ำ ไม่อมน้ำมัน กรอบฟู ไร้สารก่อมะเร็งอะคริลาไมด์</div>
+          </div>
+        </div>
+        <div class="spec-pills">
+          <span class="spec-pill raw">🍌 กล้วยหอมทองหรือกล้วยหักมุกดิบแก่</span>
+          <span class="spec-pill temp">🌡️ ทอดอุณหภูมิต่ำ 90–105°C</span>
+          <span class="spec-pill moist">💧 น้ำมันตกค้างต่ำเพียง 3–6%</span>
+          <span class="spec-pill target">🎯 สแน็กเกรดส่งออก โมเดิร์นเทรด</span>
+        </div>
+      </div>
+
+      <div class="method-content-grid">
+        <!-- Visual Technical Panel -->
+        <div class="method-visual-panel">
+          <div class="tech-diagram">
+            <!-- Custom Vector SVG Illustration: Vacuum Frying Chamber with Centrifuge -->
+            <svg viewBox="0 0 300 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="vacBg" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#f0f9ff"/>
+                  <stop offset="100%" stop-color="#e0f2fe"/>
+                </linearGradient>
+              </defs>
+              <rect width="300" height="200" fill="url(#vacBg)"/>
+              <!-- Vacuum Chamber Tank -->
+              <rect x="70" y="30" width="160" height="135" rx="20" fill="#334155" stroke="#1e293b" stroke-width="3"/>
+              <ellipse cx="150" cy="30" rx="80" ry="12" fill="#475569" stroke="#1e293b" stroke-width="2"/>
+              <!-- Oil Bath inside chamber -->
+              <path d="M74 110 C74 155, 226 155, 226 110 Z" fill="#eab308" opacity="0.6"/>
+              <!-- Rotating Centrifuge Basket -->
+              <rect x="95" y="65" width="110" height="65" rx="8" fill="none" stroke="#f8fafc" stroke-width="2" stroke-dasharray="4 2"/>
+              <!-- Banana slices inside basket -->
+              <circle cx="120" cy="85" r="7" fill="#fef08a" stroke="#ca8a04"/>
+              <circle cx="150" cy="80" r="7" fill="#fde047" stroke="#ca8a04"/>
+              <circle cx="180" cy="87" r="7" fill="#fef08a" stroke="#ca8a04"/>
+              <circle cx="135" cy="105" r="7" fill="#fef08a" stroke="#ca8a04"/>
+              <circle cx="165" cy="102" r="7" fill="#fde047" stroke="#ca8a04"/>
+              <!-- Rotation lines -->
+              <path d="M125 50 A25 10 0 0 1 175 50" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+              <!-- Vacuum Pressure Gauge -->
+              <circle cx="215" cy="45" r="14" fill="#ffffff" stroke="#0284c7" stroke-width="2"/>
+              <line x1="215" y1="45" x2="223" y2="40" stroke="#ef4444" stroke-width="1.5"/>
+              <text x="215" y="66" fill="#0284c7" font-size="7" font-weight="bold" text-anchor="middle">&lt;10 kPa</text>
+              <!-- Temperature Tag -->
+              <rect x="100" y="142" width="100" height="16" rx="4" fill="#0f172a"/>
+              <text x="150" y="154" fill="#38bdf8" font-size="9" font-family="sans-serif" font-weight="bold" text-anchor="middle">Low Temp: 90-105°C</text>
+              <text x="150" y="192" fill="#0369a1" font-size="10.5" font-family="Prompt, sans-serif" font-weight="600" text-anchor="middle">ถังทอดและสลัดน้ำมันสุญญากาศ</text>
+            </svg>
+          </div>
+          <ul class="key-facts-list">
+            <li>
+              <span class="kf-title">พันธุ์กล้วยที่ใช้</span>
+              <span class="kf-val">กล้วยหอมทอง / กล้วยหักมุก</span>
+            </li>
+            <li>
+              <span class="kf-title">ความดันในระบบ</span>
+              <span class="kf-val">&lt; 10 kPa (สุญญากาศสูง)</span>
+            </li>
+            <li>
+              <span class="kf-title">สารแช่เพิ่มความกรอบ</span>
+              <span class="kf-val">แคลเซียมคลอไรด์ CaCl₂ 0.5%</span>
+            </li>
+            <li>
+              <span class="kf-title">แช่เยือกแข็ง (Pre-freeze)</span>
+              <span class="kf-val">-18°C (4–6 ชั่วโมง)</span>
+            </li>
+            <li>
+              <span class="kf-title">ปริมาณน้ำมันตกค้าง</span>
+              <span class="kf-val">ต่ำมาก 3 – 6%</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Detailed Steps Flow -->
+        <div class="process-timeline vacuum-timeline">
+          <!-- Step 1 -->
+          <div class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การเตรียมชิ้นงานและแช่แข็งโครงสร้าง (Slicing & CaCl₂ Soaking)</span>
+                <span class="step-tag">สไลซ์ 1.5–2.0 มม.</span>
+              </div>
+              <p class="step-desc">ปอกเปลือกกล้วยหอมทองหรือหักมุกดิบ ล้างยางออก สไลซ์เป็นแผ่นบางสม่ำเสมอหนา 1.5–2.0 มม. นำไปแช่ในสารละลายแคลเซียมคลอไรด์ (CaCl₂) 0.5% เป็นเวลา 10 นาที เพื่อให้แคลเซียมไอออนจับกับเพกทินในผนังเซลล์ ช่วยให้โครงสร้างเหนียวแน่นและกรอบแข็งตัว</p>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การแช่เยือกแข็งก่อนทอด (Pre-Freezing Process)</span>
+                <span class="step-tag">-18°C / 4–6 ชั่วโมง</span>
+              </div>
+              <p class="step-desc">นำชิ้นกล้วยที่สะเด็ดน้ำแล้วไปแช่แข็งที่อุณหภูมิ -18°C นาน 4–6 ชั่วโมง การแช่เยือกแข็งจะสร้างผลึกน้ำแข็งขนาดเล็กภายในเนื้อกล้วย เมื่อนำไปทอดสุญญากาศ น้ำแข็งจะระเหิดอย่างรวดเร็วเกิดเป็นรูพรุนระดับไมโคร ทำให้เนื้อกล้วยพองกรอบฟูและไม่แข็งกระด้าง</p>
+              <div class="step-tip blue">❄️ นวัตกรรม: การ Freeze ก่อนทอดช่วยป้องกันไม่ให้ชิ้นกล้วยหดตัวแฟบ และคงรูปทรงแผ่นสวยงาม</div>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การทอดภายใต้สุญญากาศ (Low-Temperature Vacuum Frying)</span>
+                <span class="step-tag">90–105°C / &lt;10 kPa</span>
+              </div>
+              <p class="step-desc">ทอดในถังปิดสนิทภายใต้สภาวะสุญญากาศ ความดันต่ำกว่า 10 kPa ซึ่งจุดเดือดของน้ำจะลดลงเหลือต่ำกว่า 60°C ทำให้น้ำในกล้วยระเหยออกได้อย่างรวดเร็วที่อุณหภูมิน้ำมันเพียง 90–105°C (เทียบกับทอดปกติ 160–180°C) ช่วยคงสีเหลืองธรรมชาติ กลิ่นหอมแท้ และป้องกันการเกิดสารอะคริลาไมด์ (Acrylamide)</p>
+            </div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="step-item">
+            <div class="step-number">4</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การเหวี่ยงสลัดน้ำมันในสุญญากาศ (In-Chamber Centrifugation)</span>
+                <span class="step-tag">น้ำมันเหลือเพียง 3–6%</span>
+              </div>
+              <p class="step-desc">ยกตะกร้าทอดขึ้นเหนือน้ำมันและทำการเหวี่ยงหมุนสลัดน้ำมันด้วยความเร็วรอบสูง <strong>ขณะที่ยังคงรักษาสภาวะสุญญากาศไว้</strong> เพื่อป้องกันไม่ให้ความดันบรรยากาศภายนอกดันน้ำมันไหลย้อนกลับเข้าไปสะสมในโพรงเนื้อกล้วย ส่งผลให้ปริมาณน้ำมันตกค้างต่ำเพียง 3–6% เท่านั้น</p>
+            </div>
+          </div>
+
+          <!-- Step 5 -->
+          <div class="step-item">
+            <div class="step-number">5</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การคลายสุญญากาศและลดอุณหภูมิ (Cooling & Depressurization)</span>
+                <span class="step-tag">ควบคุมความกรอบ</span>
+              </div>
+              <p class="step-desc">ปล่อยลมแห้งสะอาดเข้าถังอย่างช้าๆ นำชิ้นกล้วยกรอบออกมาผึ่งในห้องควบคุมความชื้นสัมพัทธ์ (RH &lt; 40%) เพื่อให้เนื้อกล้วยคลายความร้อนจนถึงอุณหภูมิห้องโดยไม่ดูดความชื้นในอากาศกลับ</p>
+            </div>
+          </div>
+
+          <!-- Step 6 -->
+          <div class="step-item">
+            <div class="step-number">6</div>
+            <div class="step-body">
+              <div class="step-title-row">
+                <span class="step-title">การบรรจุอัดก๊าซไนโตรเจน (Nitrogen Flushing Packaging)</span>
+                <span class="step-tag">อายุ 9–12 เดือน</span>
+              </div>
+              <p class="step-desc">บรรจุในซองอะลูมิเนียมฟอยล์พร้อมอัดก๊าซไนโตรเจน (N₂ Flushing) เพื่อไล่ออกซิเจนออกจากซองอย่างสมบูรณ์ ป้องกันการเกิดปฏิกิริยากลิ่นหืนของไขมัน (Rancidity) และช่วยให้กล้วยคงความกรอบได้นาน 9–12 เดือน</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Interactive Comparison Table -->
+  <div class="table-container-card">
+    <div class="table-header-bar">
+      <div>
+        <h3>ตารางวิเคราะห์เปรียบเทียบเชิงวิศวกรรมอาหารและการตลาด</h3>
+        <p style="font-size: 13px; color: var(--muted); margin-top: 2px;">เปรียบเทียบข้อกำหนดทางเทคนิค ปัจจัยคุณภาพ และศักยภาพทางธุรกิจทั้ง 3 วิธี</p>
+      </div>
+      <div>
+        <span class="spec-pill raw">สรุปข้อมูลจากงานวิจัยและมาตรฐานอุตสาหกรรม</span>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>วิธีแปรรูป</th>
+            <th>ระดับความสุก & พันธุ์</th>
+            <th>อุณหภูมิแปรรูป</th>
+            <th>ความชื้นสุดท้าย</th>
+            <th>ปริมาณน้ำมัน</th>
+            <th>จุดเด่นทางโภชนาการ</th>
+            <th>ตลาดเป้าหมาย</th>
+            <th>อายุการเก็บ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="product-cell">
+                <span class="indicator-dot" style="background: #f59e0b;"></span>
+                กล้วยตากพลังงานแสงอาทิตย์
+              </div>
+            </td>
+            <td>กล้วยน้ำว้าสุกงอมเต็มที่ (เปลือกเหลืองมีกระ)</td>
+            <td>50–60°C (พาสเจอไรซ์ 70°C)</td>
+            <td>25–30%</td>
+            <td>0% (ไม่ใช้น้ำมัน)</td>
+            <td>หวานธรรมชาติ ไม่เติมน้ำตาล วิตามินบี โพแทสเซียม</td>
+            <td>ของฝาก, สแน็กสุขภาพ, พลังงานนักกีฬา</td>
+            <td>6 – 12 เดือน</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="product-cell">
+                <span class="indicator-dot" style="background: #10b981;"></span>
+                แป้งกล้วยดิบเพื่อสุขภาพ
+              </div>
+            </td>
+            <td>กล้วยน้ำว้าดิบแก่จัด (เปลือกเขียวเข้ม)</td>
+            <td>50–55°C (ห้ามเกิน 60°C)</td>
+            <td>&lt; 10%</td>
+            <td>0% (ไม่ใช้น้ำมัน)</td>
+            <td>Resistant Starch (RS2) สูง, ใยอาหารพรีไบโอติก, Low GI</td>
+            <td>เบาหวาน, คีโต, เบเกอรี่ปลอดกลูเตน, โรงพยาบาล</td>
+            <td>&gt; 12 เดือน</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="product-cell">
+                <span class="indicator-dot" style="background: #0284c7;"></span>
+                กล้วยกรอบสุญญากาศ
+              </div>
+            </td>
+            <td>กล้วยหอมทอง / หักมุกดิบแก่จัด</td>
+            <td>90–105°C (&lt;10 kPa)</td>
+            <td>&lt; 3%</td>
+            <td>3–6% (ต่ำมาก)</td>
+            <td>ลดสารก่อมะเร็งอะคริลาไมด์, คงสารต้านอนุมูลอิสระ</td>
+            <td>สแน็กพรีเมียม, ตลาดส่งออก, โมเดิร์นเทรด</td>
+            <td>9 – 12 เดือน</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Charts & Visual Analytics Section -->
+  <div class="dashboard-secondary-grid">
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>เปรียบเทียบพารามิเตอร์อุณหภูมิ vs ความชื้นสุดท้าย</h3>
+        <span class="spec-pill temp">การควบคุมความร้อนและความแห้ง</span>
+      </div>
+      <div class="chart-box">
+        <canvas id="processParamChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>ปริมาณไขมันตกค้าง & อายุเก็บรักษา</h3>
+        <span class="spec-pill moist">ดัชนีคุณภาพผลิตภัณฑ์</span>
+      </div>
+      <div class="chart-box">
+        <canvas id="oilFatChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Batch Calculator -->
+  <div class="calculator-card">
+    <div class="calculator-header">
+      <h3>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+          <line x1="8" y1="6" x2="16" y2="6"></line>
+          <line x1="16" y1="14" x2="16" y2="18"></line>
+          <path d="M16 10h.01"></path>
+          <path d="M12 10h.01"></path>
+          <path d="M8 10h.01"></path>
+          <path d="M12 14h.01"></path>
+          <path d="M8 14h.01"></path>
+          <path d="M12 18h.01"></path>
+          <path d="M8 18h.01"></path>
+        </svg>
+        เครื่องจำลองคำนวณผลผลิตและสูตรเตรียมวัตถุดิบ (Batch Yield Estimator)
+      </h3>
+      <p>คำนวณปริมาณผลผลิตสำเร็จรูป (Yield Output) และสารเคมีเกรดอาหารที่ต้องใช้ตามน้ำหนักกล้วยสด</p>
+    </div>
+
+    <div class="calc-controls">
+      <div class="input-group">
+        <label for="methodSelect">เลือกสายการแปรรูป</label>
+        <select id="methodSelect" onchange="calculateBatch()">
+          <option value="solar">1. กล้วยตากพลังงานแสงอาทิตย์ (Solar-Dried)</option>
+          <option value="flour">2. แป้งกล้วยดิบเพื่อสุขภาพ (Banana Flour)</option>
+          <option value="vacuum">3. กล้วยกรอบสุญญากาศ (Vacuum Fried)</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label for="rawWeight">น้ำหนักกล้วยสดเริ่มต้น (กิโลกรัม)</label>
+        <input type="number" id="rawWeight" value="100" min="10" max="10000" step="10" oninput="calculateBatch()">
+      </div>
+    </div>
+
+    <div class="calc-results-grid">
+      <div class="res-box">
+        <div class="r-label">ปริมาณผลผลิตสำเร็จรูป (Est. Yield)</div>
+        <div class="r-val" id="resYield">33.0 กก.</div>
+        <div class="r-sub" id="resYieldPct">อัตราการคืนผลผลิต ~33%</div>
+      </div>
+
+      <div class="res-box">
+        <div class="r-label">สารละลายเตรียมผิวที่ต้องใช้</div>
+        <div class="r-val" id="resAdditive">เกลือแกง 1.5 กก.</div>
+        <div class="r-sub" id="resAdditiveSub">สารละลาย NaCl 1.5% ในน้ำ 100 ลิตร</div>
+      </div>
+
+      <div class="res-box">
+        <div class="r-label">อุณหภูมิและอุปกรณ์หลัก</div>
+        <div class="r-val" id="resEquip">50–60°C</div>
+        <div class="r-sub" id="resEquipSub">พาราโบลาโดม + ลมร้อน 70°C</div>
+      </div>
+
+      <div class="res-box">
+        <div class="r-label">การบรรจุเพื่อรักษาคุณภาพ</div>
+        <div class="r-val" id="resPack">ซองสุญญากาศ</div>
+        <div class="r-sub" id="resPackSub">ป้องกันความชื้นและรา ยืดได้ 1 ปี</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Standard Operating Procedures & Food Safety Modal -->
+  <div class="modal-overlay" id="sopModal" onclick="if(event.target===this) closeModalOverview()">
+    <div class="modal-content">
+      <button class="close-modal-btn" onclick="closeModalOverview()">&times;</button>
+      <h3 style="font-family: var(--font-display); font-size: 20px; margin-bottom: 12px; color: var(--ink);">
+        📋 ข้อกำหนดมาตรฐาน อย. และจุดควบคุมวิกฤต (HACCP/GHPs)
+      </h3>
+      <p style="font-size: 14px; color: var(--muted); margin-bottom: 20px;">
+        สรุปข้อกำหนดความปลอดภัยสำหรับโรงงานแปรรูปผลิตภัณฑ์จากกล้วยตามหลักเกณฑ์อาหารกระทรวงสาธารณสุข
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 16px; font-size: 13.5px;">
+        <div style="background: #fffbeb; padding: 14px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+          <strong style="color: #92400e; display: block; margin-bottom: 4px;">1. จุดวิกฤตกล้วยตาก (CCP 1 & CCP 2):</strong>
+          • <strong>CCP 1 การอบลดความชื้น:</strong> ควบคุมค่าน้ำอิสระ aw ให้ต่ำกว่า 0.65 เพื่อป้องกันยีสต์ทนออสโมซิส (Osmophilic yeasts)<br>
+          • <strong>CCP 2 ขั้นตอนพาสเจอไรซ์:</strong> ต้องควบคุมอุณหภูมิตู้อบให้ถึง 70°C นานไม่ต่ำกว่า 30 นาที เพื่อทำลายสปอร์เชื้อรา
+        </div>
+
+        <div style="background: #f0fdf4; padding: 14px; border-radius: 8px; border-left: 4px solid #10b981;">
+          <strong style="color: #065f46; display: block; margin-bottom: 4px;">2. จุดวิกฤตแป้งกล้วยดิบ (CCP):</strong>
+          • <strong>การควบคุมอุณหภูมิอบ:</strong> ต้องควบคุมไม่เกิน 55–60°C อย่างเข้มงวด เพื่อรักษาปริมาณ Resistant Starch Type 2 ไม่ให้เจลาติไนซ์ (Gelatinize)<br>
+          • <strong>ความชื้นและจุลินทรีย์:</strong> ความชื้นต้องต่ำกว่า 10%, ตรวจไม่พบเชื้อ Salmonella spp. และ E. coli
+        </div>
+
+        <div style="background: #f0f9ff; padding: 14px; border-radius: 8px; border-left: 4px solid #0284c7;">
+          <strong style="color: #075985; display: block; margin-bottom: 4px;">3. จุดวิกฤตกล้วยกรอบสุญญากาศ (CCP):</strong>
+          • <strong>การควบคุมความดันและอุณหภูมิ:</strong> ความดัน &lt;10 kPa, อุณหภูมิน้ำมัน 90–105°C ป้องกันการเกิดสารอะคริลาไมด์ (Acrylamide)<br>
+          • <strong>ค่าเปอร์ออกไซด์ (Peroxide Value):</strong> ตรวจเช็กน้ำมันทอดให้มีค่า PV ไม่เกิน 10 meq/kg และไล่ก๊าซไนโตรเจนตอนบรรจุ
+        </div>
+      </div>
+      <div style="margin-top: 24px; text-align: right;">
+        <button class="filter-btn active" onclick="closeModalOverview()" style="background: var(--ink);">เข้าใจแล้ว / ปิดหน้าต่าง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="dash-footer">
+    <div>
+      <strong>แดชบอร์ดองค์ความรู้การแปรรูปกล้วยเชิงลึก</strong> • ข้อมูลมาตรฐานกระบวนการผลิตอาหารและวิศวกรรมการแปรรูป
+    </div>
+    <div>
+      พร้อมรองรับการต่อยอดเชิงพาณิชย์และวิสาหกิจชุมชน
+    </div>
+  </footer>
+</div>
+
+<!-- Scripts -->
+<script>
+  // Filter visibility of processing methods
+  function filterMethods(category, btnElement) {
+    // Update active tab buttons
+    const buttons = document.querySelectorAll('.tab-filters .filter-btn');
+    buttons.forEach(b => {
+      b.classList.remove('active', 'solar', 'flour', 'vacuum');
+    });
+    btnElement.classList.add('active');
+    if (category === 'solar') btnElement.classList.add('solar');
+    if (category === 'flour') btnElement.classList.add('flour');
+    if (category === 'vacuum') btnElement.classList.add('vacuum');
+
+    // Filter cards
+    const cards = document.querySelectorAll('.method-card');
+    cards.forEach(card => {
+      if (category === 'all' || card.getAttribute('data-method') === category) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  // Batch Yield Calculator Logic
+  function calculateBatch() {
+    const method = document.getElementById('methodSelect').value;
+    const rawWeight = parseFloat(document.getElementById('rawWeight').value) || 0;
+
+    const resYield = document.getElementById('resYield');
+    const resYieldPct = document.getElementById('resYieldPct');
+    const resAdditive = document.getElementById('resAdditive');
+    const resAdditiveSub = document.getElementById('resAdditiveSub');
+    const resEquip = document.getElementById('resEquip');
+    const resEquipSub = document.getElementById('resEquipSub');
+    const resPack = document.getElementById('resPack');
+    const resPackSub = document.getElementById('resPackSub');
+
+    if (method === 'solar') {
+      const yieldKg = (rawWeight * 0.33).toFixed(1);
+      const saltKg = (rawWeight * 0.015).toFixed(2);
+      resYield.innerText = yieldKg + ' กก.';
+      resYieldPct.innerText = 'Yield เฉลี่ย ~33% (สูญเสียน้ำระเหย ~67%)';
+      resAdditive.innerText = 'เกลือแกง ' + saltKg + ' กก.';
+      resAdditiveSub.innerText = 'แช่สารละลาย NaCl 1.5% ล้างเมือกและเอนไซม์';
+      resEquip.innerText = '50–60°C';
+      resEquipSub.innerText = 'พาราโบลาโดม 3–5 วัน + ลมร้อน 70°C';
+      resPack.innerText = 'ซองสุญญากาศ';
+      resPackSub.innerText = 'ความชื้น 25–30% ยืดอายุได้ 6–12 เดือน';
+    } else if (method === 'flour') {
+      const yieldKg = (rawWeight * 0.22).toFixed(1);
+      const citricKg = (rawWeight * 0.005).toFixed(2);
+      resYield.innerText = yieldKg + ' กก.';
+      resYieldPct.innerText = 'Yield เฉลี่ย ~22% (แป้งบริสุทธิ์สกัดแห้ง)';
+      resAdditive.innerText = 'กรดซิตริก ' + citricKg + ' กก.';
+      resAdditiveSub.innerText = 'สารละลาย Citric 0.5% ป้องกันเนื้อดำคล้ำ';
+      resEquip.innerText = '50–55°C (ไม่เกิน 60°C)';
+      resEquipSub.innerText = 'ตู้อบลมร้อน 8–12 ชม. + บดร่อน 100 Mesh';
+      resPack.innerText = 'ฟอยล์ทึบแสงหนา';
+      resPackSub.innerText = 'ความชื้น <10% ป้องกันชื้นกลับ เก็บได้ >1 ปี';
+    } else if (method === 'vacuum') {
+      const yieldKg = (rawWeight * 0.26).toFixed(1);
+      const cacl2Kg = (rawWeight * 0.005).toFixed(2);
+      resYield.innerText = yieldKg + ' กก.';
+      resYieldPct.innerText = 'Yield เฉลี่ย ~26% (ชิปส์กรอบพองฟู)';
+      resAdditive.innerText = 'CaCl₂ ' + cacl2Kg + ' กก.';
+      resAdditiveSub.innerText = 'แคลเซียมคลอไรด์ 0.5% เสริมความกรอบแน่นของเซลล์';
+      resEquip.innerText = '90–105°C / <10 kPa';
+      resEquipSub.innerText = 'Freeze -18°C ก่อนทอด + สลัดน้ำมันในสุญญากาศ';
+      resPack.innerText = 'ซองฟอยล์อัด N₂';
+      resPackSub.innerText = 'น้ำมันตกค้าง 3–6% ป้องกันกลิ่นหืนได้ 1 ปี';
+    }
+  }
+
+  // Modal handlers
+  function openModalOverview() {
+    document.getElementById('sopModal').classList.add('active');
+  }
+  function closeModalOverview() {
+    document.getElementById('sopModal').classList.remove('active');
+  }
+
+  // Initialize Charts with Chart.js safely
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initial calculation
+    calculateBatch();
+
+    if (typeof Chart !== 'undefined') {
+      // Chart 1: Temperature vs Moisture
+      const ctx1 = document.getElementById('processParamChart').getContext('2d');
+      new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: ['กล้วยตากแสงอาทิตย์', 'แป้งกล้วยดิบ (RS2)', 'กล้วยกรอบสุญญากาศ'],
+          datasets: [
+            {
+              label: 'อุณหภูมิแปรรูปเฉลี่ย (°C)',
+              data: [55, 52, 98],
+              backgroundColor: 'rgba(245, 158, 11, 0.85)',
+              borderColor: '#b45309',
+              borderWidth: 1,
+              borderRadius: 6
+            },
+            {
+              label: 'ความชื้นผลิตภัณฑ์สุดท้าย (%)',
+              data: [28, 9, 2.5],
+              backgroundColor: 'rgba(5, 150, 105, 0.85)',
+              borderColor: '#047857',
+              borderWidth: 1,
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                font: { family: "'Prompt', sans-serif", size: 12 }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.raw + (context.datasetIndex === 0 ? ' °C' : ' %');
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: '#f1f5f9' },
+              ticks: { font: { family: "'Sarabun', sans-serif" } }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { font: { family: "'Prompt', sans-serif", size: 12 } }
+            }
+          }
+        }
+      });
+
+      // Chart 2: Oil Content & Shelf Life
+      const ctx2 = document.getElementById('oilFatChart').getContext('2d');
+      new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: [
+            'กล้วยกรอบสุญญากาศ (3-6% น้ำมัน)',
+            'ทอดน้ำมันธรรมดาทั่วไป (25-35% น้ำมัน) [เปรียบเทียบ]'
+          ],
+          datasets: [{
+            data: [4.5, 30],
+            backgroundColor: [
+              'rgba(2, 132, 199, 0.85)',
+              'rgba(203, 213, 225, 0.7)'
+            ],
+            borderColor: ['#0284c7', '#94a3b8'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                font: { family: "'Prompt', sans-serif", size: 11.5 },
+                padding: 14
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return ' ' + context.label + ': เฉลี่ย ' + context.raw + '%';
+                }
+              }
+            }
+          },
+          cutout: '65%'
+        }
+      });
+    }
+  });
+</script>
+</body>
+</html>
